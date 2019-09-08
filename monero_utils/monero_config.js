@@ -38,16 +38,16 @@ module.exports = {
 	txMinConfirms: 10,
 
 	// Currency symbol
-	coinSymbol: "XMR",
+	coinSymbol: "XHV",
 
 	// OpenAlias prefix
-	openAliasPrefix: "xmr",
+	openAliasPrefix: "xhv",
 
 	// Currency name
-	coinName: "Monero",
+	coinName: "Haven",
 
 	// Payment URI Prefix
-	coinUriPrefix: "monero:",
+	coinUriPrefix: "haven:",
 
 	// Dust threshold in atomic units
 	// 2*10^9 used for choosing outputs/change - we decompose all the way down if the receiver wants now regardless of threshold
