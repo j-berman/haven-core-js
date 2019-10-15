@@ -53,6 +53,11 @@ function Parsed_AddressInfo__sync(
 	const blockchain_height = data.blockchain_height || 0;
 	const spent_outputs = data.spent_outputs || [];
 	//
+
+
+	/*
+	 * loop through all possible spent outputs to calc the right total sent amount
+	 */
 	for (let spent_output of spent_outputs) {
 		var key_image = monero_keyImage_cache_utils.Lazy_KeyImage(
 			keyImage_cache,
@@ -64,6 +69,10 @@ function Parsed_AddressInfo__sync(
 			spend_key__private,
 			coreBridge_instance,
 		);
+
+		/*
+		 * if its nout our output just subtract from total sent calced by backend ( which doesn't hold the private key )
+		 */
 		if (spent_output.key_image !== key_image) {
 			// console.log('💬  Output used as mixin (' + spent_output.key_image + '/' + key_image + ')')
 			total_sent = new JSBigInt(total_sent).subtract(spent_output.amount);
@@ -214,6 +223,10 @@ function Parsed_AddressTransactions__sync(
 					coreBridge_instance,
 				);
 				if (transactions[i].spent_outputs[j].key_image !== key_image) {
+					/*
+					 * output was only used as mixin
+					 */
+
 					// console.log('Output used as mixin, ignoring (' + transactions[i].spent_outputs[j].key_image + '/' + key_image + ')')
 					transactions[i].total_sent = new JSBigInt(
 						transactions[i].total_sent,
@@ -225,6 +238,10 @@ function Parsed_AddressTransactions__sync(
 				}
 			}
 		}
+
+		/*
+		 * if we didn't transfer any at all, delete tx and continue with next tx
+		 */
 		if (
 			new JSBigInt(transactions[i].total_received || 0)
 				.add(transactions[i].total_sent || 0)
@@ -234,6 +251,8 @@ function Parsed_AddressTransactions__sync(
 			i--;
 			continue;
 		}
+
+
 		transactions[i].amount = new JSBigInt(
 			transactions[i].total_received || 0,
 		)
