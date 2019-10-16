@@ -5,6 +5,7 @@ coverage
 
 build
 
+contrib/boost-sdk/
 contrib/boost-sdk/bjam
 contrib/boost-sdk/b2
 contrib/boost-sdk/project-config.jam
