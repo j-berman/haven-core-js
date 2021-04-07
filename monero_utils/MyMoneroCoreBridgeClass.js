@@ -435,8 +435,12 @@ class MyMoneroCoreBridgeClass extends MyMoneroCoreBridgeEssentialsClass
 			sec_spendKey_string: fn_args.sec_spendKey_string,
 			pub_spendKey_string: fn_args.pub_spendKey_string,
 			to_address_string: fn_args.to_address_string,
+			from_asset_type: fn_args.from_asset_type,
+			to_asset_type: fn_args.to_asset_type,
 			priority: "" + fn_args.priority,
-			nettype_string: nettype_utils.nettype_to_API_string(fn_args.nettype)
+			nettype_string: nettype_utils.nettype_to_API_string(fn_args.nettype),
+			blockchain_height: "" + fn_args.blockchain_height,
+			pricing_record: fn_args.pricing_record,
 		};
 		if (typeof fn_args.payment_id_string !== 'undefined' && fn_args.payment_id_string) {
 			args.payment_id_string = fn_args.payment_id_string;

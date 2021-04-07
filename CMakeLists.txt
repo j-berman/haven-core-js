@@ -6,6 +6,8 @@ project(MyMoneroCoreCpp)
 #
 include_directories("build/boost/include") # must exist already - run bin/build-boost-emscripten.sh
 #
+add_definitions(-DAUTO_INITIALIZE_EASYLOGGINGPP)
+#
 include_directories("src")
 #
 set(MYMONERO_CORE_CPP "src/submodules/mymonero-core-cpp")
@@ -14,9 +16,9 @@ include_directories("${MYMONERO_CORE_CPP}/src")
 #
 set(MONERO_SRC "${MYMONERO_CORE_CPP}/contrib/monero-core-custom")
 include_directories(${MONERO_SRC})
+include_directories("${MONERO_SRC}/easylogging++")
 include_directories("${MONERO_SRC}/epee/include")
 include_directories("${MONERO_SRC}/common")
-include_directories("${MONERO_SRC}/vtlogger")
 include_directories("${MONERO_SRC}/crypto")
 include_directories("${MONERO_SRC}/cryptonote_basic")
 include_directories("${MONERO_SRC}/multisig")
@@ -25,6 +27,7 @@ include_directories("${MONERO_SRC}/cryptonote_protocol")
 include_directories("${MONERO_SRC}/wallet")
 include_directories("${MONERO_SRC}/rpc")
 include_directories("${MONERO_SRC}/mnemonics")
+include_directories("${MONERO_SRC}/offshore")
 include_directories("${MONERO_SRC}/contrib/libsodium/include") # support sodium/… paths
 include_directories("${MONERO_SRC}/contrib/libsodium/include/sodium")
 #
@@ -102,8 +105,9 @@ set(
     ${MONERO_SRC}/ringct/bulletproofs.cc
     ${MONERO_SRC}/ringct/multiexp.cc
     ${MONERO_SRC}/mnemonics/electrum-words.cpp
-    ${MONERO_SRC}/vtlogger/logger.cpp
+    ${MONERO_SRC}/offshore/pricing_record.cpp
     ${MONERO_SRC}/contrib/libsodium/src/crypto_verify/verify.c
+    ${MONERO_SRC}/easylogging++/easylogging++.cc
 )
 
 set(boost_DIR ${CMAKE_SOURCE_DIR}/build/boost)

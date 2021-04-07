@@ -72,12 +72,16 @@ struct Send_Task_AsyncContext
 	string sec_viewKey_string;
 	string sec_spendKey_string;
 	string to_address_string;
+	string from_asset_type;
+	string to_asset_type;
 	optional<string> payment_id_string;
 	uint64_t sending_amount;
 	bool is_sweeping;
 	uint32_t simple_priority;
 	uint64_t unlock_time;
 	cryptonote::network_type nettype;
+	uint64_t blockchain_height;
+	offshore::pricing_record pr;
 	//
 	vector<SpendableOutput> unspent_outs;
 	uint64_t fee_per_b;
@@ -238,6 +242,10 @@ void emscr_async_bridge::send_funds(const string &args_string)
 	auto sec_viewKey_string = json_root.get<string>("sec_viewKey_string");
 	auto sec_spendKey_string = json_root.get<string>("sec_spendKey_string");
 	auto pub_spendKey_string = json_root.get<string>("pub_spendKey_string");
+	uint32_t priority = (uint32_t) stoul(json_root.get<string>("priority"));
+	//
+	auto from_asset_type = json_root.get<string>("from_asset_type");
+	auto to_asset_type = json_root.get<string>("to_asset_type");
 	//
 	uint64_t _raw_sending_amount = stoull(json_root.get<string>("sending_amount"));
 	auto is_sweeping = json_root.get<bool>("is_sweeping");
@@ -247,6 +255,33 @@ void emscr_async_bridge::send_funds(const string &args_string)
 		unlock_time = stoull(*unlock_time_string);
 	}
 	auto nettype = nettype_from_string(json_root.get<string>("nettype_string")); 
+	//
+	uint64_t blockchain_height = stoull(json_root.get<string>("blockchain_height"));
+	//
+	// initilize pricing record from JSON
+	const property_tree::ptree &pricing_record= json_root.get_child("pricing_record");
+	offshore::pricing_record pr;
+	pr.xAG = stoull(pricing_record.get<string>("xAG"));
+	pr.xAU = stoull(pricing_record.get<string>("xAU"));
+	pr.xAUD = stoull(pricing_record.get<string>("xAUD"));
+	pr.xBTC = stoull(pricing_record.get<string>("xBTC"));
+	pr.xCAD = stoull(pricing_record.get<string>("xCAD"));
+	pr.xCHF = stoull(pricing_record.get<string>("xCHF"));
+	pr.xCNY = stoull(pricing_record.get<string>("xCNY"));
+	pr.xEUR = stoull(pricing_record.get<string>("xEUR"));
+	pr.xGBP = stoull(pricing_record.get<string>("xGBP"));
+	pr.xJPY = stoull(pricing_record.get<string>("xJPY"));
+	pr.xNOK = stoull(pricing_record.get<string>("xNOK"));
+	pr.xNZD = stoull(pricing_record.get<string>("xNZD"));
+	pr.unused1 = stoull(pricing_record.get<string>("unused1"));
+	pr.unused2 = stoull(pricing_record.get<string>("unused2"));
+	pr.unused3 = stoull(pricing_record.get<string>("unused3"));
+	// get bytes from signature hex string
+ 	const string &sig_hex = pricing_record.get<string>("sig_hex");
+	for (unsigned int i = 0; i < sig_hex.length(); i += 2) {
+		std::string byteString = sig_hex.substr(i, 2);
+		pr.signature[i>>1] = (char) strtol(byteString.c_str(), NULL, 16);
+	}
 	//
 	uint64_t sending_amount = is_sweeping ? 0 : _raw_sending_amount;
 	crypto::secret_key sec_viewKey{};
@@ -279,12 +314,16 @@ void emscr_async_bridge::send_funds(const string &args_string)
 		sec_viewKey_string,
 		sec_spendKey_string,
 		json_root.get<string>("to_address_string"),
+		from_asset_type,
+		to_asset_type,
 		json_root.get_optional<string>("payment_id_string"),
 		sending_amount,
 		is_sweeping,
-		(uint32_t)stoul(json_root.get<string>("priority")),
+		priority,
 		unlock_time,
 		nettype,
+		blockchain_height,
+		pr,
 		//
 		unspent_outs, // this gets pushed to after getting unspent outs
 		0, // fee_per_b - this gets set after getting unspent outs
@@ -324,11 +363,12 @@ void emscr_async_bridge::send_funds(const string &args_string)
 	//
 	send_app_handler__status_update(task_id, fetchingLatestBalance);
 	//
-	auto req_params = new__req_params__get_unspent_outs(from_address_string, sec_viewKey_string);
+	auto req_params = new__req_params__get_unspent_outs(from_address_string, sec_viewKey_string, from_asset_type);
 	boost::property_tree::ptree req_params_root;
 	req_params_root.put("address", req_params.address);
 	req_params_root.put("view_key", req_params.view_key);
-	req_params_root.put("amount", req_params.amount); 
+	req_params_root.put("asset_type", req_params.asset_type);
+	req_params_root.put("amount", req_params.amount);
 	req_params_root.put("dust_threshold", req_params.dust_threshold); 
 	req_params_root.put("use_dust", req_params.use_dust);
 	req_params_root.put("mixin", req_params.mixin);
@@ -376,7 +416,8 @@ void emscr_async_bridge::send_cb_I__got_unspent_outs(const string &args_string)
 		json_root.get_child("res"),
 		ptrTo_taskAsyncContext->sec_viewKey,
 		ptrTo_taskAsyncContext->sec_spendKey,
-		ptrTo_taskAsyncContext->pub_spendKey
+		ptrTo_taskAsyncContext->pub_spendKey,
+		ptrTo_taskAsyncContext->from_asset_type
 	);
 	if (parsed_res.err_msg != none) {
 		send_app_handler__error_msg(task_id, std::move(*(parsed_res.err_msg)));
@@ -401,10 +442,13 @@ void emscr_async_bridge::_reenterable_construct_and_send_tx(const string &task_i
 	monero_transfer_utils::send_step1__prepare_params_for_get_decoys(
 		step1_retVals,
 		//
+		ptrTo_taskAsyncContext->from_asset_type,
+		ptrTo_taskAsyncContext->to_asset_type,
 		ptrTo_taskAsyncContext->payment_id_string,
 		ptrTo_taskAsyncContext->sending_amount,
 		ptrTo_taskAsyncContext->is_sweeping,
 		ptrTo_taskAsyncContext->simple_priority,
+		ptrTo_taskAsyncContext->pr,
 		ptrTo_taskAsyncContext->use_fork_rules,
 		ptrTo_taskAsyncContext->unspent_outs,
 		ptrTo_taskAsyncContext->fee_per_b,
@@ -491,6 +535,8 @@ void emscr_async_bridge::send_cb_II__got_random_outs(const string &args_string)
 		ptrTo_taskAsyncContext->sec_viewKey_string,
 		ptrTo_taskAsyncContext->sec_spendKey_string,
 		ptrTo_taskAsyncContext->to_address_string,
+		ptrTo_taskAsyncContext->from_asset_type,
+		ptrTo_taskAsyncContext->to_asset_type,
 		ptrTo_taskAsyncContext->payment_id_string,
 		*(ptrTo_taskAsyncContext->step1_retVals__final_total_wo_fee),
 		*(ptrTo_taskAsyncContext->step1_retVals__change_amount),
@@ -500,6 +546,8 @@ void emscr_async_bridge::send_cb_II__got_random_outs(const string &args_string)
 		ptrTo_taskAsyncContext->fee_per_b,
 		ptrTo_taskAsyncContext->fee_mask,
 		*(parsed_res.mix_outs),
+		ptrTo_taskAsyncContext->blockchain_height,
+		ptrTo_taskAsyncContext->pr,
 		ptrTo_taskAsyncContext->use_fork_rules,
 		ptrTo_taskAsyncContext->unlock_time,
 		ptrTo_taskAsyncContext->nettype

@@ -303,7 +303,7 @@ Ensure you've [properly installed Emscripten](http://kripken.github.io/emscripte
 
 *Depends upon:* Emscripten SDK
 
-Download a copy of the contents of the Boost source into `./contrib/boost-sdk/`.
+Download a copy of the contents of the [Boost source](https://www.boost.org/users/download/) into `./contrib/boost-sdk/`.
 
 * Execute `bin/build-boost-emscripten.sh`
 
