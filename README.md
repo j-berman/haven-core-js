@@ -1,4 +1,4 @@
-# MyMonero Core JS
+# Haven Core JS
 
 ### Info
 
@@ -10,8 +10,7 @@
 
 1. QA
 2. Pull Requests
-3. Building MyMoneroCoreCpp from Scratch
-4. Contributors
+3. Building HavenCoreCpp from Scratch
 
 
 # Info
@@ -20,23 +19,47 @@
 
 See `LICENSE.txt` for license.
 
-All source code copyright © 2014-2018 by MyMonero. All rights reserved.
-
 ## What's in This Repo?
 
-This repository holds the Javascript source code for the Monero/CryptoNote cryptography and protocols, plus lightwallet functions which power the official [MyMonero](https://www.mymonero.com) apps.
+This repository holds the Javascript source code for the Haven/Monero/CryptoNote cryptography and protocols, plus lightwallet functions.
 
-There is also a chain of build scripts which is capable of building a JS module by transpiling a subset of Monero source code via emscripten, which relies upon static boost libs, for which there is also a script for building from source. 
+There is also a chain of build scripts which is capable of building a JS module by transpiling a subset of Haven source code via emscripten, which relies upon static boost libs, for which there is also a script for building from source. 
 
-It's possible to run your own lightweight (hosted) wallet server by using either OpenMonero or the lightweight wallet server which MyMonero has developed specially to be open-sourced for the Monero community (PR is in the process of being merged). However, MyMonero also offers highly optimized, high throughput, secure hosting for a nominal, scaling fee per active wallet per month to wallet app makers who would like to use this library, mymonero-core-js, to add hosted Monero wallets to their app. 
+It's possible to run your own lightweight (hosted) wallet server by using the HavenWalletBackend.
 
-The benefit of offering a hosted wallet rather than requiring users to use a remote node is that scanning doesn't have to take place on the mobile device, so the user doesn't have to download the blockchain and scan on their device, or wait when they switch to a new device or come back to the app after a period of time. For more information, please reach out to Paul at [paul@mymonero.com](paul@mymonero.com). We work hard to support the growth of the Monero ecosystem, and will be happy to work with integrators on flexible pricing.
+The benefit of offering a hosted wallet rather than requiring users to use a remote node is that scanning doesn't have to take place on the mobile device, so the user doesn't have to download the blockchain and scan on their device, or wait when they switch to a new device or come back to the app after a period of time.
+
+## Thank you to MyMonero
+
+This repository owes a huge thank you to the MyMonero folks who wrote [mymonero-core-js](https://github.com/mymonero/mymonero-core-js) from which this repository is forked. We have deep appreciation for the authors of mymonero-core-js:
+
+* [Paul Shapiro](https://github.com/paulshapiro)
+
+* luigi1111
+
+* Lucas Jones     
+
+* gutenye
+
+* HenryNguyen5
+
+* cryptochangements34
+
+* bradoyler
+
+* rex4539
+
+* paullinator
+
+So, thank you!
+
+To anyone utilizing this library, please keep in mind, you may see many references to Monero and/or MyMonero in this repository (and in this README) as a result. We are working on cleaning this up for clarity.
 
 ### Contents 
 
-`monero_utils` contains Monero- and MyMonero-specific implementations, wrappers, and declarations, and the MyMonero JS and wasm (and asm.js fallback/polyfill) implementations for the underlying cryptography behind Monero. 
+`monero_utils` contains Haven-specific implementations, wrappers, and declarations, and the Haven JS and wasm (and asm.js fallback/polyfill) implementations for the underlying cryptography behind Haven. 
 
-`monero_utils/MyMoneroCoreCpp*` are produced by transpiling Monero core C++ code to JS via Emscripten (See *Building MyMoneroCoreCpp*). A Module instance is managed by `monero_utils/MyMoneroCoreBridge.js`.
+`monero_utils/MyMoneroCoreCpp*` are produced by transpiling Haven core C++ code to JS via Emscripten (See *Building HavenCoreCpp*). A Module instance is managed by `monero_utils/MyMoneroCoreBridge.js`.
 
 Library integrators may use `MyMoneroCoreBridge` by `require("./monero_utils/MyMoneroCoreBridge")({}).then(function(coreBridge_instance) { })`. (This was formerly accessed via the now-deprecated `monero_utils/monero_utils`). You may also access this MyMoneroCoreBridge promise via the existing `index.js` property `monero_utils_promise` (the name has been kept the same for API stability). 
 
@@ -277,11 +300,9 @@ Suggestions and feedback are very welcome!
 
 We'll merge nearly anything constructive. Contributors welcome and credited in releases.
 
-We often collaborate over IRC in #mymonero on Freenode.
-
 **All development happens off the `develop` branch like the Gitflow Workflow.**
 
-## Building MyMoneroCoreCpp from Scratch
+## Building HavenCoreCpp from Scratch
 
 There's no need to build monero_utils/MyMoneroCoreCpp as a build is provided, but if you were for example interested in adding a C++ function, you could use the information in this section to transpile it to JS.
 
@@ -320,31 +341,3 @@ Or if you want to copy the build products to their distribution locations,
 * Execute `bin/archive-emcpp.sh`
 
 **NOTE** If you want to build for asmjs instead of wasm, edit `CMakeLists.txt` to turn the `MM_EM_ASMJS` option to `ON` before you run either the `build` or `archive` script. Finally, at every place you instantiate a `MyMoneroCoreBridge` instance, ensure that the `asmjs` flag passed as an init argument is set to `true` (If not, loading will not work). 
-
-
-## Maintainers and Advisors
-
-* 💿 `endogenic` ([Paul Shapiro](https://github.com/paulshapiro)) Maintainer
-
-* 🍄 `luigi` Major contiributor of original JS core crypto and Monero-specific routines; Advisor
-
-
-## Authors
-
-* Paul Shapiro
-
-* luigi1111
-
-* Lucas Jones     
-
-* gutenye
-
-* HenryNguyen5
-
-* cryptochangements34
-
-* bradoyler
-
-* rex4539
-
-* paullinator
