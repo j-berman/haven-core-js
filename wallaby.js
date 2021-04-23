@@ -30,7 +30,7 @@ module.exports = function(wallaby) {
 	process.env.NODE_ENV = "development";
 
 	return {
-		name: "mymonero-core-js",
+		name: "haven-core-js",
 		files: [
 			"cryptonote_utils/**/*.js",
 			"hostAPI/**/*.js",
