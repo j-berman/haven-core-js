@@ -258,29 +258,31 @@ void emscr_async_bridge::send_funds(const string &args_string)
 	//
 	uint64_t blockchain_height = stoull(json_root.get<string>("blockchain_height"));
 	//
-	// initilize pricing record from JSON
-	const property_tree::ptree &pricing_record= json_root.get_child("pricing_record");
+	// initilize pricing record from JSON if provided
+	optional<property_tree::ptree&> pricing_record = json_root.get_child_optional("pricing_record");
 	offshore::pricing_record pr;
-	pr.xAG = stoull(pricing_record.get<string>("xAG"));
-	pr.xAU = stoull(pricing_record.get<string>("xAU"));
-	pr.xAUD = stoull(pricing_record.get<string>("xAUD"));
-	pr.xBTC = stoull(pricing_record.get<string>("xBTC"));
-	pr.xCAD = stoull(pricing_record.get<string>("xCAD"));
-	pr.xCHF = stoull(pricing_record.get<string>("xCHF"));
-	pr.xCNY = stoull(pricing_record.get<string>("xCNY"));
-	pr.xEUR = stoull(pricing_record.get<string>("xEUR"));
-	pr.xGBP = stoull(pricing_record.get<string>("xGBP"));
-	pr.xJPY = stoull(pricing_record.get<string>("xJPY"));
-	pr.xNOK = stoull(pricing_record.get<string>("xNOK"));
-	pr.xNZD = stoull(pricing_record.get<string>("xNZD"));
-	pr.unused1 = stoull(pricing_record.get<string>("unused1"));
-	pr.unused2 = stoull(pricing_record.get<string>("unused2"));
-	pr.unused3 = stoull(pricing_record.get<string>("unused3"));
-	// get bytes from signature hex string
- 	const string &sig_hex = pricing_record.get<string>("sig_hex");
-	for (unsigned int i = 0; i < sig_hex.length(); i += 2) {
-		std::string byteString = sig_hex.substr(i, 2);
-		pr.signature[i>>1] = (char) strtol(byteString.c_str(), NULL, 16);
+	if (pricing_record) {
+		pr.xAG = stoull(pricing_record->get<string>("xAG"));
+		pr.xAU = stoull(pricing_record->get<string>("xAU"));
+		pr.xAUD = stoull(pricing_record->get<string>("xAUD"));
+		pr.xBTC = stoull(pricing_record->get<string>("xBTC"));
+		pr.xCAD = stoull(pricing_record->get<string>("xCAD"));
+		pr.xCHF = stoull(pricing_record->get<string>("xCHF"));
+		pr.xCNY = stoull(pricing_record->get<string>("xCNY"));
+		pr.xEUR = stoull(pricing_record->get<string>("xEUR"));
+		pr.xGBP = stoull(pricing_record->get<string>("xGBP"));
+		pr.xJPY = stoull(pricing_record->get<string>("xJPY"));
+		pr.xNOK = stoull(pricing_record->get<string>("xNOK"));
+		pr.xNZD = stoull(pricing_record->get<string>("xNZD"));
+		pr.unused1 = stoull(pricing_record->get<string>("unused1"));
+		pr.unused2 = stoull(pricing_record->get<string>("unused2"));
+		pr.unused3 = stoull(pricing_record->get<string>("unused3"));
+		// get bytes from signature hex string
+		const string &sig_hex = pricing_record->get<string>("sig_hex");
+		for (unsigned int i = 0; i < sig_hex.length(); i += 2) {
+			std::string byteString = sig_hex.substr(i, 2);
+			pr.signature[i>>1] = (char) strtol(byteString.c_str(), NULL, 16);
+		}
 	}
 	//
 	uint64_t sending_amount = is_sweeping ? 0 : _raw_sending_amount;
